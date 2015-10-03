@@ -1,0 +1,228 @@
+Documentation for MegaMiner 10 – Galapagos
+
+--------------------------------------------------------------------------------
+Welcome to Galapagos, the wonderful island where two tribes of
+creatures battle for supremacy. There are two types of objects on the
+island: creatures and plants.
+--------------------------------------------------------------------------------
+
+Creature:
+
+id: The ID is unique to each creature in the game. No two creatures
+	will have the same ID.
+
+x: This is the “x” position of the creature (x, y).
+
+y: This is the “y” position of the creature (x, y).
+
+owner: This stores the numeric value of the owner of the creature. It
+	   will either be 0 or 1.  If the value stored in owner is the
+	   same as your player ID, it's your creature! Hooray!
+
+maxHealth: This is the maximum of health the creature can
+		   have. Derived by the global variable baseHealth and the
+		   creatures energy stat.
+
+currentHealth: This is the current health of the creature.
+
+energy: Increases you maxHealth by 10 per point.
+
+carnivorism: Determines damage to other creatures. Also influences
+			 energy restored from eating creatures. (10 per point)
+
+herbivorism: Determines the amount of health you gain from eating a
+			 plant (5 per point)
+
+speed: This value is how many moves you have per turn.
+
+movementLeft: This is how many moves you have left this turn.
+
+defense: Determines the damage you take from being eaten. (See damage
+		 formula in Eat section)
+
+canEat: This value determines whether your creature has eaten yet this
+		turn. You can eat once per turn.
+
+canBreed: This value determines whether you creature has already made
+		  sweet critter love or not. You can breed once per turn.
+
+parentID: This stores the ID of the creature that gave birth to this
+		  creature. If this is one of the starting creatures, this
+		  value is 0.
+
+--------------------------------------------------------------------------------
+
+Plant:
+
+id: The ID is unique to each plant in the game. No two plant will have
+	the same ID.
+
+x: This is the "x" position of the plant (x, y).
+
+y: This is the "y" position of the plant (x, y).
+
+size: This is how big the plant is. Plants can be size 0, but you
+	  can't eat them if they have no size.
+
+	  A plant of size 0 may also be trampled and removed from the
+	  game!
+
+growthRate: Plants grow every X turns, where X is the growthRate of
+			that plant.
+
+
+turnsUntilGrowth: This will tell you exactly how many turns are left
+				  until the plant grows again. Very handy!
+
+--------------------------------------------------------------------------------
+As a creature, you have three actions available to you: move, eat, and
+breed.  It's a simple life, but we make do.
+--------------------------------------------------------------------------------
+
+Move(x,y):
+
+You may only move to adjacent tiles.
+
+x and y are ABSOLUTE positions, not relative. Use the creature's x and
+y to make movement easier.
+
+Each move requires health (healthPerMove global). Choose wisely before
+moving your creature!
+
+You can only move a creature if it belongs to you. You can TRY to make
+your opponent's creatures move, but they probably won't listen.
+
+You cannot move if you have no movementLeft. That'd be silly!
+
+You cannot move off the edge of the map. The world is flat.
+
+You can only move one square at a time. You can call move as many
+times as you like, provided you have enough moves left to do so, but
+you can only move one square each time.
+
+You cannot move through an occupied square, with one exception. If you
+attempt to move through a square with a plant in it, AND the plant is
+of size 0, you will trample the plant. The plant will disappear, and
+will never grow again. How sad! Can you starve the opponent out!?
+
+--------------------------------------------------------------------------------
+
+Eat(x,y):
+
+You may only eat adjacent objects.
+
+You can only tell a creature to eat if it belongs to you.
+
+Eating a plant will restore health equal to your current herbivore
+level times 5.
+
+If you use the eat command on a creature, it will attack that
+creature! Here's how it works: --You deal damage to the creature equal
+to (your carnivore level - their defense) * 10.  --If the creature
+dies, you gain health equal to your carnivore level times 10.  --You
+cannot deal less than 10 points of damage, so if their defense is
+higher than your carnivorism you will always deal 10 damage.
+
+You can eat your own creatures! Cannibalism is allowed and will
+restore health.
+
+You can't eat a plant that's of size 0. It's got no size, and dirt
+isn't nutritious.
+
+Regardless of what you try to eat, you can only eat once per turn. If
+you try to eat something that isn't there, you can try again on a
+different square, but you cannot eat more than once per turn.
+
+--------------------------------------------------------------------------------
+
+Breed:
+
+Breeding costs 55 health (healthPerBreed) from EACH parent, not total.
+
+You can only breed with your own creatures. Fraternization with the
+enemy is not allowed. (No means no!)
+
+Your creatures must be next to each other to breed. You can't breed if
+there's a gap between the creatures, nor can you breed if the
+creatures are on the diagonal from each other.
+
+Creatures can only make one baby per turn. If either creature has
+already bred, you cannot breed with that creature.
+
+The baby will spawn underneath the creature that initiated
+breeding. If you already have a baby underneath you, you can't make
+another one.
+
+You can only breed successfully once per turn.
+
+--------------------------------------------------------------------------------
+LET'S MAKE A BABY
+--------------------------------------------------------------------------------
+
+So here's how making a baby works:
+
+1. Breed is called, and assuming all the conditions are met, you make
+   a baby.
+
+2. The stats of the baby are equal to the average of the two breeding
+   creature's stats, rounded up. (i,e. (3+4)/2 = 4).
+
+3. The highest stat of the creature that initiated breeding will be
+   incremented by 1 on the baby.  EXAMPLE: Carnivorism was the highest
+   stat on the initiating creature, therefore the baby's carnivorism
+   stat will be equal to the average of the 2 parent's carnivorism
+   stats plus 1.
+
+4. The lowest stat of the creature that was bred with will be
+   decremented by 1 on the baby.  EXAMPLE: Speed was the lowest stat
+   on the receiving creature, therefore the baby's speed stat will be
+   equal to the average of the 2 parent's speed stats minus 1.
+
+Creatures cannot have a stat lower than 1.
+
+Creatures cannot have a stat greater than 10.
+
+If a creature has a stat that is at one of these limits and it would be pushed past, the
+following priority list is used to decide which stat will be modified instead.
+   Energy -> Carnivorism -> Herbivorism -> Speed -> Defense -> Energy -> Carnivorism ...
+
+--------------------------------------------------------------------------------
+MISCELLANEOUS
+--------------------------------------------------------------------------------
+
+Each team starts with 7 creatures. These creatures have a random
+allocation of stats, ranging between 1 and 7.
+
+Every turn, your creature loses 2 (healthPerTurn) health, just for
+being alive. Who said life was fair?
+
+The game has a maximum of 500 turns. Whoever has the most creatures at
+the end of the game wins.  --If the number of creatures on both teams
+is the same, all stats of all creatures are added together. The player
+with the highest total stats wins.  --If the total number of stats are
+equal as well, or the game otherwise ends in a draw, the winner is
+determined at random.
+
+--------------------------------------------------------------------------------
+CONSTANTS
+--------------------------------------------------------------------------------
+turnLimit = 499
+startTime = 10
+timeInc = 1
+mapHeight = 20
+mapWidth = 30
+startingCreatures = 7
+baseHealth = 100
+healthPerMove = 1
+healthPerBreed = 55
+healthPerTurn = 2
+maxStat = 10
+minStat = 1
+maxStartStat = 7
+plantMaxSize = 10
+totalStartStats = 15
+damageMul = 10
+
+--------------------------------------------------------------------------------
+IF YOU HAVE ANY QUESTIONS, PLEASE ASK A DEV FOR HELP!
+--------------------------------------------------------------------------------
